@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EmployeeMaster | Deskify</title>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+        font-family: "Segoe UI", sans-serif;
+        background-color: #f4f6f9;
+        margin: 0;
+      }
+
+      .main {
+        position: relative;
+        margin-left: 240px;
+        padding: 100px 30px 30px 30px;
+        transition: margin-left 0.3s ease;
+        width: calc(100% - 240px);
+        height: 100vh;
+        overflow: auto;
+      }
+      .main.full {
+        margin-left: 0;
+        width: 100%;
+      }
+
+      /* Navbar and sidebar styles are now handled by navbar.js */
+
+     
+      .top-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      /* Search input styling */
+      #searchInput {
+        width: 300px;
+        max-width: 100%;
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        font-size: 16px;
+      }
+
+      /* Add button styling */
+      .btn-add {
+        background-color: #1dd12c;
+        border: none;
+        padding: 10px 20px;
+        color: #fff;
+        font-weight: bold;
+        border-radius: 6px;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+
+      /* Upload button styling */
+      .btn-upload {
+        background-color: #17a2b8;
+        border: none;
+        padding: 10px 20px;
+        color: #fff;
+        font-weight: bold;
+        border-radius: 6px;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+
+      .upload-progress {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 1050;
+        min-width: 300px;
+      }
+
+      /* Department filter styling */
+      #departmentFilter {
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        font-size: 16px;
+        background-color: #fff;
+        cursor: pointer;
+      }
+
+      #departmentFilter:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+      }
+
+      .modal-header h5 {
+        font-weight: 600;
+      }
+
+      .form-label {
+        font-weight: 500;
+      }
+
+      /* Make the icons bigger inside buttons */
+      .edit-btn i,
+      .delete-btn i {
+        font-size: 16px;
+      }
+
+      /* Action button styles */
+      .action-btn {
+        padding: 6px 10px;
+        margin: 0 2px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.2s ease;
+      }
+
+      .action-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
+
+      .action-btn i {
+        font-size: 14px;
+      }
+
+      .assign-btn {
+        background-color: #28a745;
+        color: white;
+      }
+
+      .assign-btn:hover {
+        background-color: #218838;
+      }
+
+      .unassign-btn {
+        background-color: #dc3545;
+        color: white;
+      }
+
+      .unassign-btn:hover {
+        background-color: #c82333;
+      }
+
+      .seat-badge {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: bold;
+      }
+
+      .seat-assigned {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+
+      .seat-unassigned {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .main {
+          margin-left: 0;
+          width: 100%;
+          padding: 80px 15px 15px 15px;
+        }
+
+        .top-controls {
+          flex-direction: column;
+          gap: 15px;
+          align-items: stretch;
+        }
+
+        .top-controls .d-flex {
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        #searchInput {
+          width: 100%;
+          max-width: none;
+        }
+
+        #departmentFilter {
+          max-width: none;
+        }
+
+        .top-controls .d-flex:last-child {
+          flex-direction: column;
+          width: 100%;
+        }
+
+        .btn-add,
+        .btn-upload {
+          width: 100%;
+          text-align: center;
+        }
+
+        /* Table responsive */
+        .table-responsive {
+          border: none;
+        }
+
+        #employeeTable {
+          font-size: 14px;
+        }
+
+        #employeeTable th,
+        #employeeTable td {
+          padding: 8px 4px;
+          white-space: nowrap;
+        }
+
+        /* Action buttons in table */
+        .btn-sm {
+          padding: 4px 6px;
+          font-size: 12px;
+        }
+
+        /* Modal responsive */
+        .modal-dialog {
+          margin: 10px;
+          max-width: calc(100% - 20px);
+        }
+
+        .modal-content {
+          padding: 15px !important;
+        }
+
+        .row.mb-3 {
+          margin-bottom: 15px;
+        }
+
+        .col-md-6 {
+          margin-bottom: 10px;
+        }
+      }
+
+      @media (max-width: 576px) {
+        .main {
+          padding: 70px 10px 10px 10px;
+        }
+
+        h4 {
+          font-size: 1.2rem;
+          margin-bottom: 15px;
+        }
+
+        #employeeTable {
+          font-size: 12px;
+        }
+
+        #employeeTable th,
+        #employeeTable td {
+          padding: 6px 2px;
+        }
+
+        /* Stack action buttons vertically on very small screens */
+        #employeeTable td:last-child {
+          white-space: normal;
+        }
+
+        .btn-sm {
+          margin: 1px;
+          padding: 3px 5px;
+        }
+
+        /* Badge styling for mobile */
+        .badge {
+          font-size: 10px;
+          padding: 2px 6px;
+        }
+      }
+    </style>
+
+    <script type="module" src="js/firebase.js"></script>
+
+    <script src="js/script.js"></script>
+  </head>
+  <body>
+    <script src="js/navbar.js"></script>
+    <script>
+      // Check authentication before loading page
+      if (!authManager.isLoggedIn()) {
+        window.location.href = "login.html";
+      } else {
+        // Initialize navbar with current page
+        const navbar = new Navbar("EmployeeMaster6.html");
+        navbar.init();
+      }
+    </script>
+
+    <div class="main" id="main-content">
+      <h4>Employee Master</h4>
+
+      <div class="top-controls">
+        <div class="d-flex gap-2 flex-grow-1">
+          <select
+            id="departmentFilter"
+            class="form-select"
+            style="max-width: 200px"
+            aria-label="Filter by department">
+            <option value>All Departments</option>
+          </select>
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Search employee by name, ID, or department..."
+            aria-label="Search employees"
+            class="flex-grow-1" />
+          <button
+            class="btn btn-outline-primary"
+            onclick="loadEmployees()"
+            title="Refresh list">
+            <i class="fas fa-sync-alt"></i>
+          </button>
+        </div>
+        <div class="d-flex gap-2">
+          <button
+            class="btn-add"
+            data-bs-toggle="modal"
+            data-bs-target="#addEmployeeModal">
+            Add
+          </button>
+          <button
+            class="btn-upload"
+            onclick="document.getElementById('fileInput').click()">
+            <i class="fas fa-upload"></i> Upload
+          </button>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-striped mt-0" id="employeeTable">
+          <thead>
+            <tr>
+              <th>Employee Name</th>
+              <th>Employee ID</th>
+              <th>Department Name</th>
+              <th>Seat Number</th>
+              <th>Valid Till</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+        </table>
+      </div>
+
+      <div
+        class="modal fade"
+        id="addEmployeeModal"
+        tabindex="-1"
+        aria-labelledby="addEmployeeModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content p-3">
+            <div class="modal-header">
+              <h5 class="modal-title" id="addEmployeeModalLabel">
+                Add Employee
+              </h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <form id="addEmployeeForm">
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <label class="form-label">Employee Name*</label>
+                    <input
+                      type="text"
+                      id="employeeName"
+                      class="form-control"
+                      placeholder="Employee Name"
+                      required />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Department Name*</label>
+                    <input
+                      type="text"
+                      id="departmentName"
+                      class="form-control"
+                      placeholder="Department Name"
+                      required />
+                  </div>
+                </div>
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <label class="form-label">Employee Id*</label>
+                    <input
+                      type="text"
+                      id="employeeId"
+                      class="form-control"
+                      placeholder="Employee Id"
+                      required />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Seat Number (Optional)</label>
+                    <input
+                      type="number"
+                      id="seatNumber"
+                      class="form-control"
+                      placeholder="Seat Number"
+                      min="1"
+                      max="327" />
+                  </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                  <button type="submit" class="btn btn-primary">Add</button>
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary"
+                    data-bs-dismiss="modal">
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="modal fade"
+        id="editEmployeeModal"
+        tabindex="-1"
+        aria-labelledby="editEmployeeModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content p-3">
+            <div class="modal-header">
+              <h5 class="modal-title" id="editEmployeeModalLabel">
+                Edit Employee
+              </h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <form id="editEmployeeForm">
+                <input type="hidden" id="editEmployeeId" />
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <label class="form-label">Employee Name*</label>
+                    <input
+                      type="text"
+                      id="editEmployeeName"
+                      class="form-control"
+                      required />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Department Name*</label>
+                    <input
+                      type="text"
+                      id="editDepartmentName"
+                      class="form-control"
+                      required />
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Employee Id*</label>
+                  <input
+                    type="text"
+                    id="editEmployeeIdDisplay"
+                    class="form-control"
+                    required />
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Seat Number</label>
+                  <input type="text" id="editSeatNumber" class="form-control" />
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                  <button type="submit" class="btn btn-primary">Update</button>
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary"
+                    data-bs-dismiss="modal">
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="modal fade"
+        id="seatAssignModal"
+        tabindex="-1"
+        aria-labelledby="seatAssignModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="seatAssignModalLabel">
+                Assign Seat
+              </h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <form id="seatAssignForm">
+                <input type="hidden" id="assignEmployeeDocId" />
+                <div class="mb-3">
+                  <label class="form-label">Employee Name</label>
+                  <p
+                    id="assignEmployeeName"
+                    class="form-control-plaintext"></p>
+                </div>
+                <div class="mb-3">
+                  <label for="assignSeatNumber" class="form-label">Seat
+                    Number*</label>
+                  <input
+                    type="number"
+                    id="assignSeatNumber"
+                    class="form-control"
+                    min="1"
+                    max="365"
+                    required />
+                </div>
+                <div class="d-flex justify-content-end gap-2">
+                  <button type="submit" class="btn btn-primary">
+                    Assign Seat
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary"
+                    data-bs-dismiss="modal">
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <input
+        type="file"
+        id="fileInput"
+        accept=".csv,.xlsx,.xls"
+        style="display: none" />
+
+      <div class="upload-progress" id="uploadProgress">
+        <h6><i class="fas fa-upload"></i> Uploading Employee Data</h6>
+        <div class="progress mb-2">
+          <div
+            class="progress-bar"
+            role="progressbar"
+            style="width: 0%"
+            aria-valuenow="0"
+            aria-valuemin="0"
+            aria-valuemax="100"></div>
+        </div>
+        <p class="mb-0" id="uploadStatus">Processing...</p>
+      </div>
+    </div>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Menu toggle functionality is now handled by navbar.js
+
+      // State
+      let allEmployees = []; // store fetched employees
+      let allDepartments = []; // store unique departments
+
+      // DOM refs
+      const searchInput = document.getElementById("searchInput");
+      const departmentFilter = document.getElementById("departmentFilter");
+      const addEmployeeForm = document.getElementById("addEmployeeForm");
+      const editEmployeeForm = document.getElementById("editEmployeeForm");
+      const editModalEl = document.getElementById("editEmployeeModal");
+      const editModal = new bootstrap.Modal(editModalEl);
+      const seatAssignForm = document.getElementById("seatAssignForm");
+      const seatAssignModalEl = document.getElementById("seatAssignModal");
+      const seatAssignModal = new bootstrap.Modal(seatAssignModalEl);
+      const fileInput = document.getElementById("fileInput");
+      const uploadProgress = document.getElementById("uploadProgress");
+      const uploadStatus = document.getElementById("uploadStatus");
+
+      const MAX_SEATS = 320; // maximum seats allowed
+
+
+      // File upload event handler
+      fileInput.addEventListener("change", (e) => {
+        if (e.target.files.length > 0) {
+          handleFileUpload(e.target.files[0]);
+        }
+      });
+
+      // Load all data from single seats collection
+      async function loadEmployees() {
+        try {
+          // Fetch all data from seats collection only
+          const seatsCollection = window.firestore.collection(
+            window.db,
+            "seats"
+          );
+          const seatsSnapshot = await window.firestore.getDocs(seatsCollection);
+
+          allEmployees = [];
+
+          // Process all seat records
+          seatsSnapshot.forEach((doc) => {
+            const seatData = doc.data();
+
+            // Only include records that have employee information
+            if (seatData.employeeName && seatData.employeeId) {
+              allEmployees.push({
+                id: doc.id,
+                name: seatData.employeeName,
+                employeeId: seatData.employeeId,
+                department: seatData.department || "",
+                seatNumber: seatData.seatNumber,
+                isOccupied: seatData.isOccupied || false,
+                isAssigned: seatData.seatNumber && seatData.isOccupied,
+                updatedAt: seatData.updatedAt,
+                //  validTill: seatData.validTill || "",
+              });
+            }
+          });
+
+          // Sort all employees in ascending order by seat number
+          allEmployees.sort((a, b) => {
+            const seatA = a.seatNumber || 0;
+            const seatB = b.seatNumber || 0;
+            // If both have seat numbers, sort by seat number
+            if (seatA && seatB) {
+              return seatA - seatB;
+            }
+            // If only one has a seat number, prioritize it
+            if (seatA && !seatB) return -1;
+            if (!seatA && seatB) return 1;
+            // If neither has a seat number, sort by name
+            const nameA = (a.name || "").toLowerCase();
+            const nameB = (b.name || "").toLowerCase();
+            return nameA.localeCompare(nameB);
+          });
+
+          // Extract unique departments
+          allDepartments = [
+            ...new Set(
+              allEmployees.map((emp) => emp.department).filter((dept) => dept)
+            ),
+          ];
+          populateDepartmentFilter();
+
+          applyFilter();
+        } catch (err) {
+          console.error("Error loading data:", err);
+          const tbody = document.querySelector("#employeeTable tbody");
+          tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger">Error loading data</td></tr>`;
+        }
+      }
+
+      // Populate department filter dropdown
+      function populateDepartmentFilter() {
+        departmentFilter.innerHTML =
+          '<option value="">All Departments</option>';
+        allDepartments.sort().forEach((dept) => {
+          const option = document.createElement("option");
+          option.value = dept;
+          option.textContent = dept;
+          departmentFilter.appendChild(option);
+        });
+      }
+
+      // Render an array of employees into the table body
+      function renderTableRows(employees) {
+        const tbody = document.querySelector("#employeeTable tbody");
+        tbody.innerHTML = "";
+
+        if (!employees || employees.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">No employees found.</td></tr>`;
+          return;
+        }
+
+        employees.forEach((emp) => {
+          const seatDisplay =
+            emp.seatNumber && emp.isAssigned
+              ? `<span class="seat-badge seat-assigned">${escapeHtml(
+                  emp.seatNumber
+                )}</span>`
+              : `<span class="seat-badge seat-unassigned">Unassigned</span>`;
+
+          const assignButton =
+            emp.seatNumber && emp.isAssigned
+              ? `<button class="action-btn unassign-btn" title="Unassign Seat" data-employee-id="${emp.id}">
+                  <i class="fas fa-times"></i>
+                </button>`
+              : `<button class="action-btn assign-btn" title="Assign Seat" data-employee-id="${emp.id}">
+                  <i class="fas fa-chair"></i>
+                </button>`;
+
+          const row = `
+            <tr data-employee-id="${emp.id}">
+              <td>${escapeHtml(emp.name)}</td>
+              <td>${escapeHtml(emp.employeeId)}</td>
+              <td>${escapeHtml(emp.department)}</td>
+              <td>${seatDisplay}</td>
+              <td>Not Applicable</td>
+              
+
+              <td>
+                <button class="action-btn edit-btn" title="Edit Employee" data-employee-id="${
+                  emp.id
+                }">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="action-btn delete-btn" title="Delete Employee" data-employee-id="${
+                  emp.id
+                }">
+                  <i class="fas fa-trash"></i>
+                </button>
+                ${assignButton}
+              </td>
+            </tr>
+          `;
+          tbody.insertAdjacentHTML("beforeend", row);
+        });
+      }
+
+      // Basic escaping to avoid accidental HTML injection in table cells
+      function escapeHtml(str) {
+        if (str === null || str === undefined) return "";
+        return String(str)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      // Apply current search and department filters to allEmployees and render
+      function applyFilter() {
+        const searchQuery = (searchInput.value || "").trim().toLowerCase();
+        const selectedDepartment = departmentFilter.value;
+
+        let filtered = allEmployees;
+
+        // Apply department filter
+        if (selectedDepartment) {
+          filtered = filtered.filter(
+            (emp) => emp.department === selectedDepartment
+          );
+        }
+
+        // Apply search filter
+        if (searchQuery) {
+          filtered = filtered.filter((emp) => {
+            return (
+              (emp.name && emp.name.toLowerCase().includes(searchQuery)) ||
+              (emp.employeeId &&
+                String(emp.employeeId).toLowerCase().includes(searchQuery)) ||
+              (emp.department &&
+                emp.department.toLowerCase().includes(searchQuery)) ||
+              (emp.seatNumber &&
+                String(emp.seatNumber).toLowerCase().includes(searchQuery))
+            );
+          });
+        }
+
+        // Sort data in ascending order by seat number
+        filtered.sort((a, b) => {
+          const seatA = a.seatNumber || 0;
+          const seatB = b.seatNumber || 0;
+          // If both have seat numbers, sort by seat number
+          if (seatA && seatB) {
+            return seatA - seatB;
+          }
+          // If only one has a seat number, prioritize it
+          if (seatA && !seatB) return -1;
+          if (!seatA && seatB) return 1;
+          // If neither has a seat number, sort by name
+          const nameA = (a.name || "").toLowerCase();
+          const nameB = (b.name || "").toLowerCase();
+          return nameA.localeCompare(nameB);
+        });
+
+        renderTableRows(filtered);
+      }
+
+      // Search input and department filter -> live filter
+      searchInput.addEventListener("input", applyFilter);
+      departmentFilter.addEventListener("change", applyFilter);
+
+      // File upload functions
+      async function handleFileUpload(file) {
+        const validTypes = [
+          "text/csv",
+          "application/vnd.ms-excel",
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        ];
+
+        if (
+          !validTypes.includes(file.type) &&
+          !file.name.match(/\.(csv|xlsx|xls)$/i)
+        ) {
+          alert("Please upload a valid CSV or Excel file.");
+          return;
+        }
+
+        uploadProgress.style.display = "block";
+        uploadStatus.textContent = "Reading file...";
+        updateProgressBar(25);
+
+        try {
+          const data = await readFile(file);
+          uploadStatus.textContent = "Processing data...";
+          updateProgressBar(50);
+
+          const employees = parseEmployeeData(data);
+          if (employees.length === 0) {
+            throw new Error("No valid employee data found in file.");
+          }
+
+          uploadStatus.textContent = "Saving to database...";
+          updateProgressBar(75);
+
+          await saveEmployeesToDatabase(employees);
+
+          uploadStatus.textContent = "Upload completed successfully!";
+          updateProgressBar(100);
+
+          setTimeout(() => {
+            uploadProgress.style.display = "none";
+            updateProgressBar(0);
+          }, 2000);
+
+          await loadEmployees();
+          fileInput.value = "";
+        } catch (error) {
+          console.error("Upload error:", error);
+          uploadStatus.textContent = `Error: ${error.message}`;
+          setTimeout(() => {
+            uploadProgress.style.display = "none";
+            updateProgressBar(0);
+          }, 3000);
+        }
+      }
+
+      function updateProgressBar(percentage) {
+        const progressBar = document.querySelector(".progress-bar");
+        progressBar.style.width = percentage + "%";
+        progressBar.setAttribute("aria-valuenow", percentage);
+      }
+
+      function readFile(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            try {
+              const data = new Uint8Array(e.target.result);
+              const workbook = XLSX.read(data, { type: "array" });
+              const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+              const jsonData = XLSX.utils.sheet_to_json(firstSheet, {
+                header: 1,
+              });
+              resolve(jsonData);
+            } catch (error) {
+              reject(new Error("Failed to read file: " + error.message));
+            }
+          };
+          reader.onerror = () => reject(new Error("Failed to read file"));
+          reader.readAsArrayBuffer(file);
+        });
+      }
+
+      function parseEmployeeData(data) {
+        if (data.length < 2) {
+          throw new Error(
+            "File must contain at least a header row and one data row."
+          );
+        }
+
+        const headers = data[0].map((h) => h.toString().toLowerCase().trim());
+        const employees = [];
+
+        // Find column indices
+        const nameIndex = headers.findIndex(
+          (h) => h.includes("name") && h.includes("employee")
+        );
+        const idIndex = headers.findIndex(
+          (h) => h.includes("id") && h.includes("employee")
+        );
+        const deptIndex = headers.findIndex((h) => h.includes("department"));
+        const seatIndex = headers.findIndex((h) => h.includes("seat"));
+
+        if (nameIndex === -1 || idIndex === -1 || deptIndex === -1) {
+          throw new Error(
+            "Required columns not found. Please ensure your file has: Employee Name, Employee ID, Department Name"
+          );
+        }
+
+        for (let i = 1; i < data.length; i++) {
+          const row = data[i];
+          if (!row || row.length === 0) continue;
+
+          const name = row[nameIndex]?.toString().trim();
+          const employeeId = row[idIndex]?.toString().trim();
+          const department = row[deptIndex]?.toString().trim();
+          let seatNumber = null;
+        //  if (seatIndex !== -1 && row[seatIndex]) {
+          //  const seatValue = row[seatIndex].toString().trim();
+
+            // Check if seat number contains any non-numeric characters
+          if (seatIndex !== -1 && row[seatIndex]) {
+  const seatValue = row[seatIndex].toString().trim();
+  if (seatValue && !/^\d+$/.test(seatValue)) {
+    throw new Error(
+      `Invalid seat number "${seatValue}" in row ${i + 1}. Seat numbers must be numeric only.`
+    );
+  }
+  seatNumber = seatValue ? parseInt(seatValue) : null;
+
+  // ✅ Check seat number range
+  if (seatNumber && (seatNumber < 1 || seatNumber > MAX_SEATS)) {
+    console.warn(`Seat number ${seatNumber} in row ${i + 1} is out of range. Ignoring seat assignment.`);
+    seatNumber = null; // unassign invalid seat
+  }
+}
+
+        
+
+
+          if (name && employeeId && department) {
+            employees.push({
+              name,
+              employeeId,
+              department,
+              seatNumber: seatNumber && !isNaN(seatNumber) ? seatNumber : null,
+            });
+          }
+        }
+
+        return employees;
+      }
+
+      
+      // ===START: OPTIMIZED UPLOAD FUNCTION ======
+      
+     async function saveEmployeesToDatabase(employees) {
+  // Get a reference to the collection
+  const seatsCollection = window.firestore.collection(window.db, 'seats');
+
+  let successCount = 0;
+  let skippedCount = 0;
+  
+  try {
+    // 1. Pre-fetch existing data for efficient duplicate checking in memory. This is a key optimization.
+    console.log("Pre-fetching existing data for duplicate checks...");
+    const existingSnapshot = await window.firestore.getDocs(seatsCollection);
+    const existingEmployeeIds = new Set();
+    const occupiedSeatNumbers = new Set();
+
+    existingSnapshot.forEach(doc => {
+      const data = doc.data();
+      if (data.employeeId) {
+        existingEmployeeIds.add(data.employeeId);
+      }
+      if (data.seatNumber && data.isOccupied) {
+        occupiedSeatNumbers.add(data.seatNumber);
+      }
+    });
+    console.log(`Found ${existingEmployeeIds.size} existing employees and ${occupiedSeatNumbers.size} occupied seats.`);
+
+    // 2. Create an array to hold all our individual upload promises.
+    const uploadPromises = [];
+
+    for (const employee of employees) {
+      // Check for duplicate employee ID using the pre-fetched Set
+      if (existingEmployeeIds.has(employee.employeeId)) {
+        console.log(`Employee ${employee.employeeId} already exists, skipping...`);
+        skippedCount++;
+        continue;
+      }
+
+      // Check for seat conflict using the pre-fetched Set
+      if (employee.seatNumber && occupiedSeatNumbers.has(employee.seatNumber)) {
+        console.warn(`Seat ${employee.seatNumber} for ${employee.name} is already occupied. Assigning without a seat.`);
+        employee.seatNumber = null; // Unassign the seat to avoid conflict
+      }
+
+      const employeeData = {
+        employeeName: employee.name,
+        employeeId: employee.employeeId,
+        department: employee.department,
+        seatNumber: employee.seatNumber,
+        isOccupied: !!employee.seatNumber,
+        isAssigned: !!employee.seatNumber,
+        updatedAt: new Date(),
+        originalIndex: employee.seatNumber ? employee.seatNumber - 1 : null,
+      };
+
+      // Creating an addDoc promise and add it to our array. Don't 'await' here.
+      const addPromise = window.firestore.addDoc(seatsCollection, employeeData);
+      uploadPromises.push(addPromise);
+      successCount++;
+    }
+
+    // 3. Execute all upload promises in parallel and wait for them all to complete.
+    if (uploadPromises.length > 0) {
+        console.log(`Uploading ${uploadPromises.length} new employees in parallel...`);
+        await Promise.all(uploadPromises);
+    }
+
+    // 4. Show success/warning message
+    if (skippedCount > 0) {
+      alert(
+        `Upload complete: ${successCount} new employees added. ${skippedCount} employees were skipped as duplicates.`
+      );
+    } else {
+      alert(`Successfully uploaded ${successCount} new employees!`);
+    }
+
+    localStorage.setItem("seatUpdated", Date.now().toString());
+
+  } catch (error) {
+    console.error("Error saving employees to database:", error);
+    alert(`An error occurred during the bulk upload. Check the console for details.`);
+  }
+}
+      
+      // ===== END: OPTIMIZED UPLOAD FUNCTION ======
+      
+
+      // Add employee
+      addEmployeeForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const name = document.getElementById("employeeName").value.trim();
+        const department = document
+          .getElementById("departmentName")
+          .value.trim();
+        const employeeId = document.getElementById("employeeId").value.trim();
+        const seatNumberValue = document
+          .getElementById("seatNumber")
+          .value.trim();
+        const seatNumber = seatNumberValue ? parseInt(seatNumberValue) : null;
+
+        if (!name || !department || !employeeId) {
+          alert(
+            "Please fill in all required fields (Name, Department, and Employee ID)."
+          );
+          return;
+        }
+
+        if (seatNumberValue && isNaN(seatNumber)) {
+          alert("Seat Number must be a valid number.");
+          return;
+        }
+
+       if (seatNumber && (seatNumber < 1 || seatNumber > MAX_SEATS)) {
+  alert(`Seat Number Must Be Between 1 to ${MAX_SEATS}`);
+  return;
+}
+
+
+        try {
+          const seatsCollection = window.firestore.collection(
+            window.db,
+            "seats"
+          );
+
+          // Check if employee already exists
+          const existingEmpQuery = window.firestore.query(
+            seatsCollection,
+            window.firestore.where("employeeId", "==", employeeId)
+          );
+          const existingEmpSnapshot = await window.firestore.getDocs(
+            existingEmpQuery
+          );
+
+          if (!existingEmpSnapshot.empty) {
+            alert("Employee with this ID already exists!");
+            return;
+          }
+
+          // Check if seat is already occupied (if seat number provided)
+          if (seatNumber) {
+            const existingSeatQuery = window.firestore.query(
+              seatsCollection,
+              window.firestore.where("seatNumber", "==", seatNumber)
+            );
+            const existingSeatSnapshot = await window.firestore.getDocs(
+              existingSeatQuery
+            );
+
+            if (!existingSeatSnapshot.empty) {
+              alert(
+                "Seat is already occupied. Please choose a different seat number."
+              );
+              return;
+            }
+          }
+
+          // Add employee with seat information to seats collection
+          const employeeData = {
+            employeeName: name,
+            employeeId: employeeId,
+            department: department,
+            seatNumber: seatNumber,
+            isOccupied: seatNumber ? true : false,
+            updatedAt: new Date(),
+          };
+
+          // If seat number is provided, set originalIndex to maintain physical position
+          if (seatNumber) {
+            
+         
+            employeeData.originalIndex = seatNumber - 1;
+            employeeData.isAssigned = true;
+          } else {
+            // If no seat number provided, set defaults for unassigned employee
+            employeeData.originalIndex = null;
+            employeeData.isAssigned = false;
+          }
+
+          await window.firestore.addDoc(seatsCollection, employeeData);
+
+          // clear form, hide modal, reload
+          addEmployeeForm.reset();
+          bootstrap.Modal.getOrCreateInstance(
+            document.getElementById("addEmployeeModal")
+          ).hide();
+          searchInput.value = ""; // optional: clear search when adding
+          await loadEmployees();
+
+          // Notify allocation page about the update
+          localStorage.setItem("seatUpdated", Date.now().toString());
+            //  Show popup here
+  alert("Employee added successfully!");
+
+        } catch (err) {
+          console.error(err);
+          alert("Error occurred while adding employee. Check console.");
+        }
+      });
+
+      // Edit, Delete, Assign & Unassign: event delegation on tbody
+      document
+        .querySelector("#employeeTable tbody")
+        .addEventListener("click", async (e) => {
+          const btn = e.target.closest("button");
+          if (!btn) return;
+          const tr = btn.closest("tr");
+          if (!tr) return;
+          const employeeDocId = btn.getAttribute("data-employee-id");
+
+          // Find the employee data
+          const employee = allEmployees.find((emp) => emp.id === employeeDocId);
+          if (!employee) {
+            alert("Employee not found!");
+            return;
+          }
+
+          if (btn.classList.contains("edit-btn")) {
+            // populate edit form
+            document.getElementById("editEmployeeId").value = employee.id;
+            document.getElementById("editEmployeeName").value = employee.name;
+            document.getElementById("editEmployeeIdDisplay").value =
+              employee.employeeId;
+            document.getElementById("editDepartmentName").value =
+              employee.department;
+            document.getElementById("editSeatNumber").value =
+              employee.seatNumber || "";
+            editModal.show();
+          } else if (btn.classList.contains("delete-btn")) {
+            if (!confirm("Are you sure you want to delete this employee?"))
+              return;
+
+            try {
+              const seatDocRef = window.firestore.doc(
+                window.db,
+                "seats",
+                employee.id
+              );
+              await window.firestore.deleteDoc(seatDocRef);
+
+              //alert("Employee deleted successfully!");
+              await loadEmployees();
+
+              // Notify allocation page about the update
+              localStorage.setItem("seatUpdated", Date.now().toString());
+            } catch (err) {
+              console.error(err);
+              alert("Error while deleting. Check console.");
+            }
+          } else if (btn.classList.contains("assign-btn")) {
+            // Show seat assignment modal
+            document.getElementById("assignEmployeeDocId").value = employee.id;
+            document.getElementById("assignEmployeeName").textContent =
+              employee.name;
+            document.getElementById("assignSeatNumber").value =
+              employee.seatNumber || "";
+            seatAssignModal.show();
+          } else if (btn.classList.contains("unassign-btn")) {
+            if (!confirm("Are you sure you want to unassign this seat?"))
+              return;
+
+            try {
+              const seatDocRef = window.firestore.doc(
+                window.db,
+                "seats",
+                employee.id
+              );
+              await window.firestore.updateDoc(seatDocRef, {
+                seatNumber: null,
+                isOccupied: false,
+                isAssigned: false,
+                originalIndex: null,
+                updatedAt: new Date(),
+              });
+
+              alert("Seat unassigned successfully!");
+              await loadEmployees();
+
+              // Notify allocation page about the update
+              localStorage.setItem("seatUpdated", Date.now().toString());
+            } catch (error) {
+              console.error("Error unassigning seat:", error);
+              alert("Error unassigning seat. Please try again.");
+            }
+          }
+        });
+
+      // Handle edit form submit
+      editEmployeeForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const currentSeatId = document.getElementById("editEmployeeId").value; // This is actually the seat document ID
+        const name = document.getElementById("editEmployeeName").value.trim();
+        const department = document
+          .getElementById("editDepartmentName")
+          .value.trim();
+        const newEmployeeId = document
+          .getElementById("editEmployeeIdDisplay")
+          .value.trim();
+        const newSeatNumberValue = document
+          .getElementById("editSeatNumber")
+          .value.trim();
+        const newSeatNumber = newSeatNumberValue
+          ? parseInt(newSeatNumberValue)
+          : null;
+
+        if (!name || !department || !newEmployeeId) {
+          alert("Please fill in name, employee ID, and department.");
+          return;
+        }
+
+        if (newSeatNumberValue && isNaN(newSeatNumber)) {
+          alert("New seat number must be a number.");
+          return;
+        }
+
+      /*  if (newSeatNumber && (newSeatNumber < 1 || newSeatNumber > 365)) {
+          alert("Allocation is full");
+          return;
+        } */
+       if (newSeatNumber && (newSeatNumber < 1 || newSeatNumber > MAX_SEATS)) {
+  alert(`Seat Number Must Be Between 1 to ${MAX_SEATS}`);
+  return;
+}
+
+
+        try {
+          const seatsCollection = window.firestore.collection(
+            window.db,
+            "seats"
+          );
+
+          // Check if new employee ID already exists (excluding current record)
+          const existingEmployeeQuery = window.firestore.query(
+            seatsCollection,
+            window.firestore.where("employeeId", "==", newEmployeeId)
+          );
+          const existingEmployeeSnapshot = await window.firestore.getDocs(
+            existingEmployeeQuery
+          );
+
+          // Check if the existing employee ID belongs to a different record
+          const isDifferentRecord = existingEmployeeSnapshot.docs.some(
+            (doc) => doc.id !== currentSeatId
+          );
+          if (isDifferentRecord) {
+            alert("Employee ID already exists. Please use a different ID.");
+            return;
+          }
+
+          // Check if new seat number is occupied by another employee (if seat number is provided)
+          if (newSeatNumber) {
+            const existingSeatQuery = window.firestore.query(
+              seatsCollection,
+              window.firestore.where("seatNumber", "==", newSeatNumber)
+            );
+            const existingSeatSnapshot = await window.firestore.getDocs(
+              existingSeatQuery
+            );
+
+            // Check if the existing seat belongs to a different record
+            const isDifferentSeat = existingSeatSnapshot.docs.some(
+              (doc) => doc.id !== currentSeatId
+            );
+            if (isDifferentSeat) {
+              alert(
+                "Seat number is already occupied. Please choose a different seat."
+              );
+              return;
+            }
+          }
+
+          // Update the seat record with new information
+          const seatDocRef = window.firestore.doc(
+            window.db,
+            "seats",
+            currentSeatId
+          );
+          const updateData = {
+            employeeName: name,
+            employeeId: newEmployeeId,
+            department: department,
+            updatedAt: new Date(),
+          };
+
+          // Handle seat number changes
+          if (newSeatNumber) {
+            updateData.seatNumber = newSeatNumber;
+            updateData.isOccupied = true;
+            updateData.isAssigned = true;
+     
+            // Only set originalIndex if it doesn't exist 
+            const currentDoc = await window.firestore.getDoc(seatDocRef);
+            if (currentDoc.exists() && currentDoc.data().originalIndex !== undefined && currentDoc.data().originalIndex !== null) {
+              // Keep existing originalIndex to maintain visual position
+              updateData.originalIndex = currentDoc.data().originalIndex;
+            } else {
+              // For data without originalIndex, use seat number - 1
+              updateData.originalIndex = newSeatNumber - 1;
+            }
+          } else {
+            // If no seat number provided, remove seat assignment but keep employee info
+            updateData.seatNumber = null;
+            updateData.isOccupied = false;
+            updateData.isAssigned = false;
+            updateData.originalIndex = null;
+          }
+
+          await window.firestore.updateDoc(seatDocRef, updateData);
+
+          alert("Record updated successfully!");
+          editModal.hide();
+          searchInput.value = ""; // optional: clear search on update
+          await loadEmployees();
+
+          // Notify allocation page about the update
+          localStorage.setItem("seatUpdated", Date.now().toString());
+        } catch (err) {
+          console.error(err);
+          alert("Error occurred while updating. Check console.");
+        }
+      });
+
+      // Seat assignment form
+      seatAssignForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const docId = document.getElementById("assignEmployeeDocId").value;
+        const seatNumber = parseInt(
+          document.getElementById("assignSeatNumber").value.trim()
+        );
+
+        if (!seatNumber || isNaN(seatNumber)) {
+          alert("Please enter a valid seat number.");
+          return;
+        }
+
+       /* if (seatNumber < 1 || seatNumber > 365) {
+          alert("Seat Number must be between 1 and 365.");
+          return;
+        } */
+       if (seatNumber < 1 || seatNumber > MAX_SEATS) {
+  alert(`Seat Number Must Be Between 1 to ${MAX_SEATS}`);
+  return;
+}
+
+
+        try {
+          const seatsCollection = window.firestore.collection(
+            window.db,
+            "seats"
+          );
+
+          // Check if seat is already assigned to another employee
+          const existingSeatQuery = window.firestore.query(
+            seatsCollection,
+            window.firestore.where("seatNumber", "==", seatNumber),
+            window.firestore.where("isOccupied", "==", true)
+          );
+          const existingSeatSnapshot = await window.firestore.getDocs(
+            existingSeatQuery
+          );
+
+          const isDifferentEmployee = existingSeatSnapshot.docs.some(
+            (doc) => doc.id !== docId
+          );
+          if (isDifferentEmployee) {
+            alert(
+              "Seat is already assigned to another employee. Please choose a different seat."
+            );
+            return;
+          }
+
+          // Check if we're trying to assign a new seat (not updating existing assignment)
+          const currentEmployeeDoc = await window.firestore.getDoc(
+            window.firestore.doc(window.db, "seats", docId)
+          );
+          const currentEmployeeData = currentEmployeeDoc.data();
+          const isNewAssignment = !currentEmployeeData.seatNumber || !currentEmployeeData.isOccupied;
+
+          if (isNewAssignment) {
+            // Check total occupied seats for capacity limit (320 seats)
+            const occupiedSeatsQuery = window.firestore.query(
+              seatsCollection,
+              window.firestore.where("isOccupied", "==", true)
+            );
+            const occupiedSeatsSnapshot = await window.firestore.getDocs(occupiedSeatsQuery);
+            
+            if (occupiedSeatsSnapshot.size >= 365) {
+              alert("Allocation is full");
+              return;
+            }
+          }
+
+          // Assign seat
+          const employeeDocRef = window.firestore.doc(
+            window.db,
+            "seats",
+            docId
+          );
+          // Create employee data with originalIndex for allocation page compatibility
+          const employeeData = {
+            seatNumber: seatNumber,
+            isOccupied: true,
+            isAssigned: true,
+            updatedAt: new Date(),
+          };
+
+          // Set originalIndex to maintain physical position consistency
+          if (seatNumber) {
+            employeeData.originalIndex = seatNumber - 1;
+          }
+
+          await window.firestore.updateDoc(employeeDocRef, employeeData);
+
+          alert("Seat assigned successfully!");
+          seatAssignModal.hide();
+          await loadEmployees();
+
+          // Notify allocation page about the update
+          localStorage.setItem("seatUpdated", Date.now().toString());
+        } catch (err) {
+          console.error(err);
+          alert("Error occurred while assigning seat. Check console.");
+        }
+      });
+
+      // Listen for seat updates from allocation page
+      window.addEventListener("storage", (e) => {
+        if (e.key === "seatUpdated") {
+          loadEmployees();
+        }
+      });
+
+      // initial load
+      document.addEventListener("DOMContentLoaded", loadEmployees);
+
+      // Listen for seat updates from other pages (like allocation6.html)
+      window.addEventListener("storage", function (e) {
+        if (e.key === "seatUpdated") {
+          console.log(
+            "Seat update detected from another page, refreshing employee data..."
+          );
+          loadEmployees(); // Reload employee data to reflect changes
+        }
+      });
+
+      // Also check for updates when the page becomes visible (tab switching)
+      document.addEventListener("visibilitychange", function () {
+        if (!document.hidden) {
+          const lastUpdate = localStorage.getItem("seatUpdated");
+          if (lastUpdate && Date.now() - parseInt(lastUpdate) < 60000) {
+            // Within last minute
+            console.log(
+              "Recent seat update detected, refreshing employee data..."
+            );
+            loadEmployees();
+          }
+        }
+      });
+    </script>
+  </body>
+</html>
