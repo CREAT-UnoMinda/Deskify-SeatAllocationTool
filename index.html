@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Deskify | Login</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
+      rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <!--<div class="container-fluid d-flex justify-content-center align-items-center min-vh-100 bg-light"> -->
+    <div
+      class="container-fluid d-flex justify-content-center align-items-center min-vh-100 bg-light">
+
+      <div class="login-box-wrapper">
+        <div
+          class="row login-box shadow-lg rounded-4 overflow-hidden bg-white flex-column flex-md-row">
+
+          <!-- Left Panel -->
+          <div
+            class="col-md-6 d-flex flex-column justify-content-between bg-left p-4 position-relative">
+
+            <!-- UNO Minda logo at top-left -->
+            <div class="position-absolute top-0 start-0 m-4">
+              <img src="uno-minda-transparent.png.png" alt="UNO Minda"
+                class="uno-logo" />
+            </div>
+
+            <!-- <div class="d-flex flex-column align-items-center justify-content-center flex-grow-1"> -->
+            <!-- <img src="man-sits-chair-with-laptop-word-mail-it_1293074-182654-removebg-preview.png" alt="login illustration" class="login-img img-fluid mt-5" /> -->
+            <div
+              class="d-flex flex-column align-items-center justify-content-center flex-grow-1 text-center">
+              <img
+                src="man-sits-chair-with-laptop-word-mail-it_1293074-182654-removebg-preview.png"
+                alt="login illustration"
+                class="login-img img-fluid mt-5" />
+
+            </div>
+
+          </div>
+
+          <!-- Right Panel -->
+          <div class="col-md-6 p-5 right-panel">
+
+            <h3 class="welcome-text">Welcome</h3>
+
+            <p class="login-subtext">Login your account</p>
+
+            <br>
+
+            <form id="loginForm">
+              <div class="mb-3">
+                <label for="loginId" class="form-label">Login Id</label>
+                <input type="text" name="loginId" class="form-control"
+                  id="loginId" placeholder="Your Login Id" required />
+              </div>
+
+              <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <div class="input-group">
+                  <input type="password" name="password" class="form-control"
+                    id="password" placeholder="Your Password" required />
+                  <span class="input-group-text">
+                    <i class="bi bi-eye" id="togglePassword"
+                      style="cursor: pointer;"></i>
+                  </span>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary w-100">Log
+                in</button>
+
+              <!-- Powered by Text -->
+              <div class="text-center mt-4 powered-by">
+                <small>Powered by <span
+                    class="brand-handle">@UNOMinda</span></small>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <script src="js/script.js"></script>
+  </body>
+</html>
