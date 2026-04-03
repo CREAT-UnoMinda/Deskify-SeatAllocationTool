@@ -438,7 +438,7 @@
                       class="form-control"
                       placeholder="Seat Number"
                       min="1"
-                      max="327" />
+                      max="350" />
                   </div>
                 </div>
 
@@ -559,7 +559,7 @@
                     id="assignSeatNumber"
                     class="form-control"
                     min="1"
-                    max="365"
+                    max="350"
                     required />
                 </div>
                 <div class="d-flex justify-content-end gap-2">
@@ -623,7 +623,7 @@
       const uploadProgress = document.getElementById("uploadProgress");
       const uploadStatus = document.getElementById("uploadStatus");
 
-      const MAX_SEATS = 320; // maximum seats allowed
+      const MAX_SEATS = 350; // maximum seats allowed
 
 
       // File upload event handler
@@ -982,7 +982,7 @@
       }
 
       
-      // ===START: OPTIMIZED UPLOAD FUNCTION ======
+      // ===== START: OPTIMIZED UPLOAD FUNCTION ======
       
      async function saveEmployeesToDatabase(employees) {
   // Get a reference to the collection
@@ -1460,14 +1460,14 @@
           const isNewAssignment = !currentEmployeeData.seatNumber || !currentEmployeeData.isOccupied;
 
           if (isNewAssignment) {
-            // Check total occupied seats for capacity limit (320 seats)
+            // Check total occupied seats for capacity limit (350 seats)
             const occupiedSeatsQuery = window.firestore.query(
               seatsCollection,
               window.firestore.where("isOccupied", "==", true)
             );
             const occupiedSeatsSnapshot = await window.firestore.getDocs(occupiedSeatsQuery);
             
-            if (occupiedSeatsSnapshot.size >= 365) {
+            if (occupiedSeatsSnapshot.size >= 350) {
               alert("Allocation is full");
               return;
             }
